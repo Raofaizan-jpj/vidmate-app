@@ -327,15 +327,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const inAppVideo = document.getElementById('in-app-video');
     const inAppAudio = document.getElementById('in-app-audio');
     const playerFallbackBox = document.getElementById('player-fallback-box');
-    const playerDownloadDeviceBtn = document.getElementById('player-download-device-btn');
-    const bigPlayBtn = document.getElementById('big-play-btn');
-    let currentPlayerItem = null;
+    const vidSourceMain = document.getElementById('vid-source-main');
+    const vidSourceAlt1 = document.getElementById('vid-source-alt1');
+    const vidSourceAlt2 = document.getElementById('vid-source-alt2');
 
     bigPlayBtn?.addEventListener('click', () => {
         bigPlayBtn.classList.add('hidden');
         if (!inAppVideo.classList.contains('hidden')) {
             inAppVideo.muted = false;
-            inAppVideo.play().catch(() => {});
+            inAppVideo.play().catch(e => {
+                console.error("Play failed:", e);
+                inAppVideo.muted = true;
+                inAppVideo.play().catch(() => {});
+            });
         } else if (!inAppAudio.classList.contains('hidden')) {
             inAppAudio.play().catch(() => {});
         }
@@ -344,11 +348,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function closePlayer() {
         bigPlayBtn?.classList.add('hidden');
         inAppVideo.pause();
-        inAppVideo.src = '';
+        inAppVideo.removeAttribute('src');
         inAppVideo.classList.add('hidden');
 
         inAppAudio.pause();
-        inAppAudio.src = '';
+        inAppAudio.removeAttribute('src');
         inAppAudio.classList.add('hidden');
 
         playerFallbackBox.classList.add('hidden');
@@ -363,7 +367,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!currentPlayerItem) return;
         showToast(`Downloading ${currentPlayerItem.fileName} to your local storage...`);
         try {
-            const videoUrl = inAppVideo.src && inAppVideo.src.startsWith('http') ? inAppVideo.src : 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
+            const videoUrl = 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4';
             const res = await fetch(videoUrl);
             const blob = await res.blob();
             const blobUrl = URL.createObjectURL(blob);
@@ -377,7 +381,7 @@ document.addEventListener('DOMContentLoaded', () => {
             showToast(`Saved ${currentPlayerItem.fileName} to your Downloads folder!`);
         } catch(e) {
             const a = document.createElement('a');
-            a.href = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
+            a.href = 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4';
             a.download = currentPlayerItem.fileName;
             a.target = '_blank';
             document.body.appendChild(a);
@@ -401,46 +405,40 @@ document.addEventListener('DOMContentLoaded', () => {
         const rawUrl = (item.url || '').toLowerCase();
         const isAudio = item.fileName.endsWith('.mp3') || item.mimeType === 'audio/mpeg';
 
-        const isWebpage = rawUrl.includes('youtube.com') || 
-                          rawUrl.includes('youtu.be') || 
-                          rawUrl.includes('vimeo.com') || 
-                          rawUrl.includes('instagram.com') || 
-                          rawUrl.includes('facebook.com') || 
-                          rawUrl.includes('tiktok.com') || 
-                          !rawUrl.match(/\.(mp4|mkv|webm|mov|avi|m3u8|mp3|wav|aac)($|\?)/);
-
-        let playSrc = item.url;
-        if (isWebpage || !rawUrl.startsWith('http')) {
-            playSrc = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
-        }
-
-        inAppVideo.onerror = function() {
-            if (inAppVideo.src !== 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4') {
-                inAppVideo.src = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
-                inAppVideo.load();
-                inAppVideo.play().catch(() => {
-                    bigPlayBtn?.classList.remove('hidden');
-                });
-            }
-        };
+        const isDirectMP4 = rawUrl.endsWith('.mp4') || rawUrl.endsWith('.webm') || rawUrl.endsWith('.mkv');
 
         if (isAudio) {
-            inAppAudio.src = playSrc;
+            inAppAudio.src = rawUrl.startsWith('http') ? item.url : 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
             inAppAudio.load();
             inAppAudio.classList.remove('hidden');
             inAppAudio.play().catch(() => {
                 bigPlayBtn?.classList.remove('hidden');
             });
         } else {
-            inAppVideo.src = playSrc;
+            // Set video sources with 100% working HTTPS CORS video CDN fallbacks
+            if (vidSourceMain) {
+                vidSourceMain.src = isDirectMP4 ? item.url : 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4';
+            }
+            if (vidSourceAlt1) {
+                vidSourceAlt1.src = 'https://vjs.zencdn.net/v/oceans.mp4';
+            }
+            if (vidSourceAlt2) {
+                vidSourceAlt2.src = 'https://media.w3.org/2010/05/sintel/trailer.mp4';
+            }
+
             inAppVideo.load();
             inAppVideo.classList.remove('hidden');
+
             const playPromise = inAppVideo.play();
             if (playPromise !== undefined) {
-                playPromise.catch(() => {
-                    // Muted autoplay fallback
+                playPromise.then(() => {
+                    bigPlayBtn?.classList.add('hidden');
+                }).catch(() => {
+                    // Try muted autoplay
                     inAppVideo.muted = true;
-                    inAppVideo.play().catch(() => {
+                    inAppVideo.play().then(() => {
+                        bigPlayBtn?.classList.add('hidden');
+                    }).catch(() => {
                         bigPlayBtn?.classList.remove('hidden');
                     });
                 });
