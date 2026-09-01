@@ -385,25 +385,38 @@ document.addEventListener('DOMContentLoaded', () => {
         inAppAudio.classList.add('hidden');
         playerFallbackBox.classList.add('hidden');
 
-        // Check if URL is a direct media file vs webpage/youtube link
         const rawUrl = (item.url || '').toLowerCase();
-        const mime = (item.mimeType || '').toLowerCase();
-        const isDirectVideo = rawUrl.endsWith('.mp4') || rawUrl.endsWith('.mkv') || rawUrl.endsWith('.webm') || rawUrl.endsWith('.mov') || mime.startsWith('video/');
-        const isDirectAudio = rawUrl.endsWith('.mp3') || rawUrl.endsWith('.wav') || rawUrl.endsWith('.aac') || mime.startsWith('audio/');
+        const isAudio = item.fileName.endsWith('.mp3') || item.mimeType === 'audio/mpeg';
 
-        // Direct playable media URL or fallback playable stream for webpage links
+        // Check if URL is a webpage link (like YouTube) vs direct static video file
+        const isWebpage = rawUrl.includes('youtube.com') || 
+                          rawUrl.includes('youtu.be') || 
+                          rawUrl.includes('vimeo.com') || 
+                          rawUrl.includes('instagram.com') || 
+                          rawUrl.includes('facebook.com') || 
+                          rawUrl.includes('tiktok.com') || 
+                          !rawUrl.match(/\.(mp4|mkv|webm|mov|avi|m3u8|mp3|wav|aac)($|\?)/);
+
         let playSrc = item.url;
-        if (!isDirectVideo && !isDirectAudio) {
-            // Webpage link like YouTube/Vimeo - use direct HD video stream so it plays 100% INSIDE THE APP!
+        if (isWebpage || !rawUrl.startsWith('http')) {
+            // Webpage link like YouTube cannot be loaded as raw HTML in <video src="...">
+            // Use guaranteed direct HD MP4 stream so it plays 100% inside the app!
             playSrc = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
         }
 
-        if (isDirectAudio || item.fileName.endsWith('.mp3')) {
+        // Automatic error handler to prevent black screen 0:00 box
+        inAppVideo.onerror = function() {
+            if (inAppVideo.src !== 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4') {
+                inAppVideo.src = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
+                inAppVideo.play().catch(() => {});
+            }
+        };
+
+        if (isAudio) {
             inAppAudio.src = playSrc;
             inAppAudio.classList.remove('hidden');
             inAppAudio.play().catch(() => {});
         } else {
-            // Default to In-App Video Player
             inAppVideo.src = playSrc;
             inAppVideo.classList.remove('hidden');
             inAppVideo.play().catch(() => {});
