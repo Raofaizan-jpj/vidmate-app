@@ -386,20 +386,49 @@ document.addEventListener('DOMContentLoaded', () => {
         inAppVideo.classList.add('hidden');
         inAppAudio.classList.add('hidden');
         playerFallbackBox.classList.add('hidden');
+        playerFallbackBox.innerHTML = '';
 
         // Always show player modal
         playerModal.classList.remove('hidden');
 
-        const rawUrl = (item.url || '').toLowerCase();
+        const rawUrl = (item.url || '').trim();
         const isAudio = item.fileName.endsWith('.mp3') || item.mimeType === 'audio/mpeg';
-        const isDirectMP4 = rawUrl.endsWith('.mp4') || rawUrl.endsWith('.webm') || rawUrl.endsWith('.mkv');
 
-        const targetSrc = isDirectMP4 ? item.url : 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4';
+        // Check for YouTube URL
+        let videoId = '';
+        if (rawUrl.includes('youtube.com/watch') && rawUrl.includes('v=')) {
+            videoId = rawUrl.split('v=')[1].split('&')[0];
+        } else if (rawUrl.includes('youtu.be/')) {
+            videoId = rawUrl.split('youtu.be/')[1].split('?')[0];
+        }
+
+        if (videoId) {
+            // Render exact original YouTube video inside FastFetch App!
+            inAppVideo.pause();
+            inAppVideo.classList.add('hidden');
+            inAppAudio.pause();
+            inAppAudio.classList.add('hidden');
+            
+            playerFallbackBox.classList.remove('hidden');
+            playerFallbackBox.innerHTML = `
+                <iframe width="100%" height="240" src="https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0" 
+                        title="${escapeHTML(item.fileName)}" 
+                        frameborder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowfullscreen 
+                        style="border-radius: 12px; width: 100%; height: 240px; border: none;">
+                </iframe>
+            `;
+            return;
+        }
+
+        // Direct media files (MP4, MKV, WebM, MP3)
+        const targetSrc = item.blobUrl || item.url || 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
 
         if (isAudio) {
             inAppVideo.classList.add('hidden');
             inAppAudio.classList.remove('hidden');
-            inAppAudio.src = rawUrl.startsWith('http') ? item.url : 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
+            inAppAudio.src = targetSrc;
             inAppAudio.load();
             inAppAudio.play().catch(() => {});
         } else {
