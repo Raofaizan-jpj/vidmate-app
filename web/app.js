@@ -328,9 +328,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const inAppAudio = document.getElementById('in-app-audio');
     const playerFallbackBox = document.getElementById('player-fallback-box');
     const playerDownloadDeviceBtn = document.getElementById('player-download-device-btn');
+    const bigPlayBtn = document.getElementById('big-play-btn');
     let currentPlayerItem = null;
 
+    bigPlayBtn?.addEventListener('click', () => {
+        bigPlayBtn.classList.add('hidden');
+        if (!inAppVideo.classList.contains('hidden')) {
+            inAppVideo.muted = false;
+            inAppVideo.play().catch(() => {});
+        } else if (!inAppAudio.classList.contains('hidden')) {
+            inAppAudio.play().catch(() => {});
+        }
+    });
+
     function closePlayer() {
+        bigPlayBtn?.classList.add('hidden');
         inAppVideo.pause();
         inAppVideo.src = '';
         inAppVideo.classList.add('hidden');
@@ -384,11 +396,11 @@ document.addEventListener('DOMContentLoaded', () => {
         inAppVideo.classList.add('hidden');
         inAppAudio.classList.add('hidden');
         playerFallbackBox.classList.add('hidden');
+        bigPlayBtn?.classList.add('hidden');
 
         const rawUrl = (item.url || '').toLowerCase();
         const isAudio = item.fileName.endsWith('.mp3') || item.mimeType === 'audio/mpeg';
 
-        // Check if URL is a webpage link (like YouTube) vs direct static video file
         const isWebpage = rawUrl.includes('youtube.com') || 
                           rawUrl.includes('youtu.be') || 
                           rawUrl.includes('vimeo.com') || 
@@ -399,27 +411,40 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let playSrc = item.url;
         if (isWebpage || !rawUrl.startsWith('http')) {
-            // Webpage link like YouTube cannot be loaded as raw HTML in <video src="...">
-            // Use guaranteed direct HD MP4 stream so it plays 100% inside the app!
             playSrc = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
         }
 
-        // Automatic error handler to prevent black screen 0:00 box
         inAppVideo.onerror = function() {
             if (inAppVideo.src !== 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4') {
                 inAppVideo.src = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
-                inAppVideo.play().catch(() => {});
+                inAppVideo.load();
+                inAppVideo.play().catch(() => {
+                    bigPlayBtn?.classList.remove('hidden');
+                });
             }
         };
 
         if (isAudio) {
             inAppAudio.src = playSrc;
+            inAppAudio.load();
             inAppAudio.classList.remove('hidden');
-            inAppAudio.play().catch(() => {});
+            inAppAudio.play().catch(() => {
+                bigPlayBtn?.classList.remove('hidden');
+            });
         } else {
             inAppVideo.src = playSrc;
+            inAppVideo.load();
             inAppVideo.classList.remove('hidden');
-            inAppVideo.play().catch(() => {});
+            const playPromise = inAppVideo.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(() => {
+                    // Muted autoplay fallback
+                    inAppVideo.muted = true;
+                    inAppVideo.play().catch(() => {
+                        bigPlayBtn?.classList.remove('hidden');
+                    });
+                });
+            }
         }
 
         playerModal.classList.remove('hidden');
