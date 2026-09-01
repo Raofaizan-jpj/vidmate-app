@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">FastFetch Downloader</string>
+    <string name="app_subtitle">Fast, simple and reliable file downloads</string>
+    <string name="url_placeholder">Paste a direct download URL here</string>
+    <string name="supported_types">Supports direct video, audio, image and document URLs</string>
+    <string name="btn_download">DOWNLOAD</string>
+    <string name="no_downloads">No downloads yet</string>
+</resources>

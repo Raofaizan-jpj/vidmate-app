@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FastFetch Downloader</title>
+    <meta name="description" content="Fast, simple and reliable direct file downloader app. Supports direct video, audio, image, and document URLs.">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="dark-mode">
+    <div class="mobile-container">
+        <!-- App Header -->
+        <header class="app-header">
+            <div class="brand-group">
+                <div class="logo-box">
+                    <i class="fa-solid fa-download"></i>
+                </div>
+                <div class="brand-text">
+                    <h1>FastFetch</h1>
+                    <p>Fast, simple & reliable downloader</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button id="nav-history-btn" title="Download History" class="icon-btn">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                </button>
+                <button id="nav-settings-btn" title="Settings" class="icon-btn">
+                    <i class="fa-solid fa-gear"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="content-area">
+            <!-- HOME SCREEN -->
+            <section id="screen-home" class="screen active">
+                <div class="card url-card">
+                    <h2 class="card-title">Download Any Direct File</h2>
+                    
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-link input-icon"></i>
+                        <input type="url" id="url-input" placeholder="Paste a direct download URL here" autocomplete="off">
+                        <button id="clear-url-btn" class="input-action-btn hidden" title="Clear">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                        <button id="paste-url-btn" class="input-action-btn" title="Paste from clipboard">
+                            <i class="fa-solid fa-paste"></i>
+                        </button>
+                    </div>
+
+                    <p class="supported-text">
+                        <i class="fa-solid fa-circle-check"></i> Supports direct video, audio, image and document URLs
+                    </p>
+
+                    <button id="main-download-btn" class="btn primary-btn">
+                        <span id="btn-spinner" class="spinner hidden"></span>
+                        <i class="fa-solid fa-download btn-icon" id="btn-icon"></i>
+                        <span id="btn-text">DOWNLOAD</span>
+                    </button>
+                </div>
+
+                <div class="section-header">
+                    <h3>Recent Downloads</h3>
+                    <button id="view-all-history-btn" class="text-link-btn">View All</button>
+                </div>
+
+                <div id="recent-downloads-list" class="downloads-list">
+                    <!-- Dynamic Items Or Empty State -->
+                    <div class="empty-state" id="home-empty-state">
+                        <div class="empty-icon"><i class="fa-solid fa-folder-open"></i></div>
+                        <p class="empty-title">No downloads yet</p>
+                        <p class="empty-subtitle">Paste a direct link above to get started</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- DOWNLOADS HISTORY SCREEN -->
+            <section id="screen-history" class="screen">
+                <div class="screen-title-group">
+                    <h2>Download History</h2>
+                </div>
+
+                <div class="filter-tabs">
+                    <button class="filter-chip active" data-filter="all">All (<span id="count-all">0</span>)</button>
+                    <button class="filter-chip" data-filter="active">Active (<span id="count-active">0</span>)</button>
+                    <button class="filter-chip" data-filter="completed">Completed (<span id="count-completed">0</span>)</button>
+                </div>
+
+                <div id="history-downloads-list" class="downloads-list">
+                    <div class="empty-state" id="history-empty-state">
+                        <div class="empty-icon"><i class="fa-solid fa-box-open"></i></div>
+                        <p class="empty-title">No downloads found</p>
+                        <p class="empty-subtitle">Downloaded files will appear here</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SETTINGS SCREEN -->
+            <section id="screen-settings" class="screen">
+                <div class="screen-title-group">
+                    <h2>App Settings</h2>
+                </div>
+
+                <div class="card setting-card">
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <i class="fa-solid fa-folder setting-icon"></i>
+                            <div>
+                                <span class="setting-label">Download Location</span>
+                                <span class="setting-subtext" id="setting-location-val">Browser Downloads Directory</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card setting-card">
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <i class="fa-solid fa-wifi setting-icon"></i>
+                            <div>
+                                <span class="setting-label">Wi-Fi Only Downloads</span>
+                                <span class="setting-subtext">Download files only when connected to Wi-Fi</span>
+                            </div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggle-wifi">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="card setting-card">
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <i class="fa-solid fa-bell setting-icon"></i>
+                            <div>
+                                <span class="setting-label">Download Notifications</span>
+                                <span class="setting-subtext">Show progress alerts in browser & notification bar</span>
+                            </div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggle-notif" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="card setting-card">
+                    <div class="setting-item col">
+                        <div class="setting-info">
+                            <i class="fa-solid fa-circle-half-stroke setting-icon"></i>
+                            <div>
+                                <span class="setting-label">Appearance / Theme</span>
+                            </div>
+                        </div>
+                        <div class="radio-group">
+                            <label class="radio-option">
+                                <input type="radio" name="theme-mode" value="dark" checked>
+                                <span>Dark Mode</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="theme-mode" value="light">
+                                <span>Light Mode</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card setting-card">
+                    <div class="setting-item col">
+                        <div class="setting-info">
+                            <i class="fa-solid fa-trash-can setting-icon danger"></i>
+                            <div>
+                                <span class="setting-label">Clear History</span>
+                                <span class="setting-subtext">Clears local download records</span>
+                            </div>
+                        </div>
+                        <button id="clear-all-history-btn" class="btn outline-danger-btn">
+                            Clear Download History
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card setting-card about-card">
+                    <div class="setting-info">
+                        <i class="fa-solid fa-circle-info setting-icon primary"></i>
+                        <div>
+                            <span class="setting-label">About FastFetch Downloader</span>
+                            <span class="setting-subtext highlight">Version 1.0.0 (Production Ready)</span>
+                            <p class="about-desc">Fast, simple and reliable direct file downloader for Android and Web.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Bottom Navigation Bar -->
+        <nav class="bottom-nav">
+            <button class="nav-item active" data-target="screen-home">
+                <i class="fa-solid fa-house"></i>
+                <span>Home</span>
+            </button>
+            <button class="nav-item" data-target="screen-history">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+                <span>Downloads</span>
+            </button>
+            <button class="nav-item" data-target="screen-settings">
+                <i class="fa-solid fa-gear"></i>
+                <span>Settings</span>
+            </button>
+        </nav>
+    </div>
+
+    <!-- PREVIEW DIALOG MODAL -->
+    <div id="preview-modal" class="modal-backdrop hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>File Information Preview</h3>
+                <button id="close-modal-btn" class="close-btn"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div id="modal-error-banner" class="error-banner hidden">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <span id="modal-error-msg">The server could not be reached.</span>
+            </div>
+
+            <div class="preview-details">
+                <div class="detail-row">
+                    <i class="fa-solid fa-file-code icon"></i>
+                    <div>
+                        <label>File Name</label>
+                        <span id="preview-name">video_sample.mp4</span>
+                    </div>
+                </div>
+                <div class="detail-row">
+                    <i class="fa-solid fa-circle-info icon"></i>
+                    <div>
+                        <label>File Type</label>
+                        <span id="preview-type">video/mp4</span>
+                    </div>
+                </div>
+                <div class="detail-row">
+                    <i class="fa-solid fa-hard-drive icon"></i>
+                    <div>
+                        <label>Estimated Size</label>
+                        <span id="preview-size">14.2 MB</span>
+                    </div>
+                </div>
+                <div class="detail-row">
+                    <i class="fa-solid fa-globe icon"></i>
+                    <div>
+                        <label>Domain Host</label>
+                        <span id="preview-domain">example.com</span>
+                    </div>
+                </div>
+                <div class="detail-row">
+                    <i class="fa-solid fa-sliders icon"></i>
+                    <div>
+                        <label>Select Format / HD Quality</label>
+                        <select id="preview-quality-select" class="quality-select">
+                            <option value="1080p">🎬 1080p Full HD (MP4)</option>
+                            <option value="720p" selected>📹 720p HD (MP4)</option>
+                            <option value="480p">📺 480p SD (MP4)</option>
+                            <option value="360p">📱 360p Mobile (MP4)</option>
+                            <option value="mp3">🎵 Audio Only (MP3)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button id="confirm-download-btn" class="btn primary-btn">Start Download</button>
+                <button id="cancel-preview-btn" class="btn outline-btn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- IN-APP BUILT-IN MEDIA PLAYER MODAL -->
+    <div id="player-modal" class="modal-backdrop hidden">
+        <div class="modal-card player-card">
+            <div class="modal-header">
+                <div class="player-title-info">
+                    <i class="fa-solid fa-circle-play primary"></i>
+                    <h3 id="player-file-name">Playing Video</h3>
+                </div>
+                <button id="close-player-btn" class="close-btn"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div class="player-container">
+                <video id="in-app-video" class="media-player hidden" controls controlsList="nodownload" playsinline></video>
+                <audio id="in-app-audio" class="media-player hidden" controls></audio>
+                <div id="player-fallback-box" class="player-fallback hidden">
+                    <i class="fa-solid fa-file-arrow-down fallback-icon"></i>
+                    <p id="player-fallback-title">File Ready</p>
+                    <p class="player-fallback-sub">Downloaded and stored in FastFetch App</p>
+                </div>
+            </div>
+
+            <div class="modal-actions" style="margin-top: 16px;">
+                <button id="player-download-device-btn" class="btn primary-btn">
+                    <i class="fa-solid fa-download"></i> Save to Device Downloads
+                </button>
+                <button id="player-close-action-btn" class="btn outline-btn">Close Player</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast hidden">
+        <span id="toast-message">Message</span>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
