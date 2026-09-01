@@ -291,15 +291,8 @@
             </div>
             
             <div class="player-container">
-                <video id="in-app-video" class="media-player hidden" controls controlsList="nodownload" playsinline preload="auto" crossorigin="anonymous">
-                    <source id="vid-source-main" src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4" type="video/mp4">
-                    <source id="vid-source-alt1" src="https://vjs.zencdn.net/v/oceans.mp4" type="video/mp4">
-                    <source id="vid-source-alt2" src="https://media.w3.org/2010/05/sintel/trailer.mp4" type="video/mp4">
-                </video>
-                <audio id="in-app-audio" class="media-player hidden" controls preload="auto"></audio>
-                <button id="big-play-btn" class="big-play-btn hidden">
-                    <i class="fa-solid fa-play"></i> Tap to Play
-                </button>
+                <video id="in-app-video" class="media-player hidden" controls playsinline></video>
+                <audio id="in-app-audio" class="media-player hidden" controls></audio>
                 <div id="player-fallback-box" class="player-fallback hidden">
                     <i class="fa-solid fa-file-arrow-down fallback-icon"></i>
                     <p id="player-fallback-title">File Ready</p>

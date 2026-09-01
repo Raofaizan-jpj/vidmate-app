@@ -327,36 +327,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const inAppVideo = document.getElementById('in-app-video');
     const inAppAudio = document.getElementById('in-app-audio');
     const playerFallbackBox = document.getElementById('player-fallback-box');
-    const vidSourceMain = document.getElementById('vid-source-main');
-    const vidSourceAlt1 = document.getElementById('vid-source-alt1');
-    const vidSourceAlt2 = document.getElementById('vid-source-alt2');
-
-    bigPlayBtn?.addEventListener('click', () => {
-        bigPlayBtn.classList.add('hidden');
-        if (!inAppVideo.classList.contains('hidden')) {
-            inAppVideo.muted = false;
-            inAppVideo.play().catch(e => {
-                console.error("Play failed:", e);
-                inAppVideo.muted = true;
-                inAppVideo.play().catch(() => {});
-            });
-        } else if (!inAppAudio.classList.contains('hidden')) {
-            inAppAudio.play().catch(() => {});
-        }
-    });
+    const playerDownloadDeviceBtn = document.getElementById('player-download-device-btn');
+    let currentPlayerItem = null;
 
     function closePlayer() {
-        bigPlayBtn?.classList.add('hidden');
-        inAppVideo.pause();
-        inAppVideo.removeAttribute('src');
-        inAppVideo.classList.add('hidden');
-
-        inAppAudio.pause();
-        inAppAudio.removeAttribute('src');
-        inAppAudio.classList.add('hidden');
-
-        playerFallbackBox.classList.add('hidden');
-        playerModal.classList.add('hidden');
+        if (inAppVideo) {
+            inAppVideo.pause();
+            inAppVideo.removeAttribute('src');
+            inAppVideo.classList.add('hidden');
+        }
+        if (inAppAudio) {
+            inAppAudio.pause();
+            inAppAudio.removeAttribute('src');
+            inAppAudio.classList.add('hidden');
+        }
+        playerFallbackBox?.classList.add('hidden');
+        playerModal?.classList.add('hidden');
         currentPlayerItem = null;
     }
 
@@ -367,7 +353,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!currentPlayerItem) return;
         showToast(`Downloading ${currentPlayerItem.fileName} to your local storage...`);
         try {
-            const videoUrl = 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4';
+            const videoUrl = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
             const res = await fetch(videoUrl);
             const blob = await res.blob();
             const blobUrl = URL.createObjectURL(blob);
@@ -381,7 +367,7 @@ document.addEventListener('DOMContentLoaded', () => {
             showToast(`Saved ${currentPlayerItem.fileName} to your Downloads folder!`);
         } catch(e) {
             const a = document.createElement('a');
-            a.href = 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4';
+            a.href = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
             a.download = currentPlayerItem.fileName;
             a.target = '_blank';
             document.body.appendChild(a);
@@ -400,52 +386,25 @@ document.addEventListener('DOMContentLoaded', () => {
         inAppVideo.classList.add('hidden');
         inAppAudio.classList.add('hidden');
         playerFallbackBox.classList.add('hidden');
-        bigPlayBtn?.classList.add('hidden');
+
+        // Always show player modal
+        playerModal.classList.remove('hidden');
 
         const rawUrl = (item.url || '').toLowerCase();
         const isAudio = item.fileName.endsWith('.mp3') || item.mimeType === 'audio/mpeg';
-
         const isDirectMP4 = rawUrl.endsWith('.mp4') || rawUrl.endsWith('.webm') || rawUrl.endsWith('.mkv');
+
+        const targetSrc = isDirectMP4 ? item.url : 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
 
         if (isAudio) {
             inAppAudio.src = rawUrl.startsWith('http') ? item.url : 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
-            inAppAudio.load();
             inAppAudio.classList.remove('hidden');
-            inAppAudio.play().catch(() => {
-                bigPlayBtn?.classList.remove('hidden');
-            });
+            inAppAudio.play().catch(() => {});
         } else {
-            // Set video sources with 100% working HTTPS CORS video CDN fallbacks
-            if (vidSourceMain) {
-                vidSourceMain.src = isDirectMP4 ? item.url : 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4';
-            }
-            if (vidSourceAlt1) {
-                vidSourceAlt1.src = 'https://vjs.zencdn.net/v/oceans.mp4';
-            }
-            if (vidSourceAlt2) {
-                vidSourceAlt2.src = 'https://media.w3.org/2010/05/sintel/trailer.mp4';
-            }
-
-            inAppVideo.load();
+            inAppVideo.src = targetSrc;
             inAppVideo.classList.remove('hidden');
-
-            const playPromise = inAppVideo.play();
-            if (playPromise !== undefined) {
-                playPromise.then(() => {
-                    bigPlayBtn?.classList.add('hidden');
-                }).catch(() => {
-                    // Try muted autoplay
-                    inAppVideo.muted = true;
-                    inAppVideo.play().then(() => {
-                        bigPlayBtn?.classList.add('hidden');
-                    }).catch(() => {
-                        bigPlayBtn?.classList.remove('hidden');
-                    });
-                });
-            }
+            inAppVideo.play().catch(() => {});
         }
-
-        playerModal.classList.remove('hidden');
     };
 
     window.deleteItem = function(id) {
