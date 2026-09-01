@@ -394,16 +394,26 @@ document.addEventListener('DOMContentLoaded', () => {
         const isAudio = item.fileName.endsWith('.mp3') || item.mimeType === 'audio/mpeg';
         const isDirectMP4 = rawUrl.endsWith('.mp4') || rawUrl.endsWith('.webm') || rawUrl.endsWith('.mkv');
 
-        const targetSrc = isDirectMP4 ? item.url : 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
+        const targetSrc = isDirectMP4 ? item.url : 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4';
 
         if (isAudio) {
-            inAppAudio.src = rawUrl.startsWith('http') ? item.url : 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
+            inAppVideo.classList.add('hidden');
             inAppAudio.classList.remove('hidden');
+            inAppAudio.src = rawUrl.startsWith('http') ? item.url : 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
+            inAppAudio.load();
             inAppAudio.play().catch(() => {});
         } else {
-            inAppVideo.src = targetSrc;
+            inAppAudio.classList.add('hidden');
             inAppVideo.classList.remove('hidden');
-            inAppVideo.play().catch(() => {});
+            inAppVideo.src = targetSrc;
+            inAppVideo.load();
+            const p = inAppVideo.play();
+            if (p !== undefined) {
+                p.catch(() => {
+                    inAppVideo.muted = true;
+                    inAppVideo.play().catch(() => {});
+                });
+            }
         }
     };
 
