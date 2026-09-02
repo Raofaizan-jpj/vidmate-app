@@ -1,0 +1,5 @@
+# robots.txt for VidMate App / FastFetch Downloader
+User-agent: *
+Allow: /
+
+Sitemap: https://vidmate-app-git-main-mf-faizan.vercel.app/sitemap.xml
